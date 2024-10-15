@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.momo.mapper.PostImageMapper">
+    <select id="getPostImageAll">
+        select pimg_id as id,
+               pimg_text as text,
+               pimg_path as file
+        from tb_post_img
+        where shop_id=#{currShopId}
+    </select>
+
+    <select id="insertPostImage">
+        set @next_pimg_id := (
+            select IFNULL(max(pimg_id),0)+1
+            from  tb_post_img
+            where shop_id=#{currShopId}
+            );
+
+        insert into tb_post_img
+        (shop_id, pimg_id, pimg_text, pimg_path)
+        VALUES (#{currShopId},@next_pimg_id, #{text},#{path});
+
+        select @next_pimg_id
+    </select>
+
+    <update id="updatePostImage">
+        update tb_post_img
+        set pimg_text=#{text}
+            <if test="path != null and !path.equals('')">
+                ,pimg_path=#{path}
+            </if>
+        where shop_id=#{currShopId} and
+              pimg_id=#{pimgId}
+    </update>
+
+
+    <delete id="deletePostImage">
+        delete from tb_post_img
+        where shop_id=#{currShopId} and
+              pimg_id=#{pimgId}
+    </delete>
+
+    <delete id="deleteAll">
+        delete from tb_post_img
+        where shop_id=#{currShopId}
+    </delete>
+</mapper>

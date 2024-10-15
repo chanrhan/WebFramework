@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.momo.mapper.UserMapper">
+    <select id="getUserAll">
+        with users as (
+            select ac.*,
+                   sf.role,
+                   IF(sf.role = 1, sh.br_no, '') as br_no,
+                    sf.approval_st,
+                    sf.shop_id,
+                    sh.shop_nm
+            from tb_staff sf
+            left outer join tb_shop sh on sh.shop_id=sf.shop_id
+            left outer join tb_account ac on ac.id=sf.staff_id
+            where user_st=#{userSt}
+        ), search as (
+            select *
+            from users
+            where
+                <if test="keyword != null and !keyword.equals('')">
+                    (
+                        name like '%${keyword}%' or
+                        tel like '%${keyword}%' or
+                        email like '%${keyword}%' or
+                        br_no like '%${keyword}%'
+                    ) and
+                </if>
+                1=1
+            <if test="limit != null and !limit.equals('')">
+                limit ${limit}
+            </if>
+        ), result as (
+            select json_arrayagg(json_object(
+                'id', id,
+                'shop_id',shop_id,
+                'name',name,
+                'pfp',pfp,
+                'email',email,
+                'tel',tel,
+                'br_no',br_no,
+                'regi_dt',date_format(regi_dt, '%Y-%m-%d'),
+                'last_login_dt',last_login_dt,
+                'role',role,
+                'approval_st',approval_st,
+                'shop_nm',shop_nm
+                ))
+            from search
+        )
+
+        select (
+                   select count(*)
+                   from users
+               ) as total_cnt,
+               (
+                   select *
+                   from result
+               ) as list
+
+    </select>
+
+    <select id="getNotificationData">
+        SELECT sf.staff_id as id,
+               (
+                   select name
+                   from tb_account
+                   where id=#{userId}
+                   ) as name
+        FROM tb_staff sf
+        WHERE sf.role=1 and
+              shop_id=#{shopId}
+    </select>
+
+    <select id="findUserByTelEmail">
+        select id,
+               regi_dt
+        from tb_account
+        where
+        <if test="tel != null and !tel.equals('')">
+            tel = #{tel} and
+        </if>
+        <if test="email != null and !email.equals('')">
+            email = #{email} and
+        </if>
+            1=1
+    </select>
+
+
+    <select id="getPassword">
+        select pwd
+        from tb_account
+        where id=#{id}
+    </select>
+
+    <update id="updatePassword" parameterType="com.momo.common.vo.UserVO">
+        UPDATE tb_account
+        SET pwd = #{updatePwd}
+        WHERE id = #{id}
+          AND pwd = #{pwd}
+    </update>
+
+    <select id="getInnerStaffAll">
+        WITH sale as (
+            SELECT sf.staff_id as id,
+                    sf.role,
+                    ac.name,
+                    ac.tel,
+                    ac.email,
+                    sf.start_dt,
+                    ac.last_login_dt,
+                    sf.shop_id,
+                    sf.approval_st
+            from tb_staff sf
+            left outer join tb_account ac on ac.id = sf.staff_id
+            where sf.shop_id = #{currShopId}
+        ), search as (
+            SELECT *
+            from sale
+            WHERE
+            <if test="keyword != null and !keyword.equals('')">
+                (
+                name like '%${keyword}%' or
+                tel like '%${keyword}%'
+                ) and
+            </if>
+            1=1
+            <if test="limit != null and !limit.equals('')">
+                limit ${limit}
+            </if>
+        ), result as (
+            SELECT json_arrayagg(json_object(
+                'id',id,
+                'role',role,
+                'name',name,
+                'tel',tel,
+                'email',email,
+                'last_login_dt',last_login_dt,
+                'start_dt',start_dt,
+                'shop_id',shop_id,
+                'approval_st',approval_st
+                ))
+            from search
+        )
+
+        select (
+            select IFNULL(count(*),0)
+            from sale
+        ) as total_cnt,
+            (
+                select *
+                from result
+        ) as list
+
+    </select>
+
+    <select id="getInnerStaff">
+        select json_objectagg(
+                       sf.staff_id, ac.name
+               )
+        from tb_staff sf
+         left outer join tb_account ac on ac.id=sf.staff_id
+        where shop_id=#{currShopId} and
+              approval_st = 1
+    </select>
+
+    <select id="getSessionData">
+        SELECT curr_shop_id
+        FROM tb_account
+        WHERE id=#{userId}
+    </select>
+
+    <select id="getName">
+        SELECT name
+        FROM tb_account
+        WHERE id=#{id}
+    </select>
+
+    <update id="updateApprovalState">
+        UPDATE tb_staff
+        SET approval_st=#{state}
+        WHERE staff_id=#{staffId} and
+              shop_id=#{shopId}
+    </update>
+
+    <select id="getInnerStaffName">
+        SELECT (
+                SELECT name
+                FROM tb_account
+                WHERE id=staff_id
+                   ) as name
+        from tb_staff
+        where shop_id = #{currShopId} and
+              approval_st=1
+    </select>
+
+    <select id="getStaffByShopId">
+        SELECT ac.name,
+               ac.user_st,
+               sf.role,
+               sf.approval_st
+        from tb_staff sf
+        left outer join tb_account ac on ac.id = sf.staff_id
+        where shop_id = #{shopId}
+    </select>
+
+    <update id="updateCurrentShop">
+        update tb_account
+        set curr_shop_id=#{shopId}
+        where id=#{userId}
+    </update>
+
+    <update id="updateNickname">
+        UPDATE tb_account
+        SET nickname=#{nickname}
+        WHERE   id=#{id}
+    </update>
+
+    <update id="updateBrNo">
+        UPDATE tb_account
+        SET br_no=#{brNo}
+        WHERE   id=#{id}
+    </update>
+
+    <update id="resetPassword" parameterType="com.momo.common.vo.UserVO">
+        UPDATE tb_account
+        SET     pwd=#{pwd}
+        WHERE id = #{id}
+    </update>
+
+    <select id="existUserId">
+        SELECT IF(count(*) > 0, true, false)
+        FROM tb_account
+        WHERE id = #{userId}
+    </select>
+
+    <select id="existEmail">
+        SELECT (COUNT(*) > 0) as exist
+        FROM tb_account
+        WHERE email = #{email}
+    </select>
+
+    <select id="findTelEmailById">
+        SELECT tel,
+               email
+        FROM tb_account
+        WHERE id=#{id}
+    </select>
+
+    <select id="matchUserId" parameterType="com.momo.common.vo.UserVO">
+        SELECT IF(count(*) > 0,TRUE,FALSE)
+        FROM tb_account
+        WHERE id = #{id}
+          AND (
+            tel = #{tel} or
+            email = #{email}
+            )
+    </select>
+
+    <select id="getProfilePicture" resultType="java.lang.String">
+        SELECT pfp
+        FROM tb_account
+        WHERE id = #{id}
+    </select>
+
+    <update id="updatePfp">
+        UPDATE tb_account
+        SET pfp=#{path}
+        WHERE id = #{id}
+    </update>
+
+    <select id="isApproved" resultType="java.lang.Boolean">
+        SELECT (
+            select IFNULL(sf.approval_st, false)
+            from tb_staff sf
+            where sf.staff_id = id and
+                  sf.shop_id = curr_shop_id
+                   ) as approval_st
+        FROM tb_account
+        where id=#{id}
+    </select>
+
+    <select id="tryFindUserIdByEmail" parameterType="com.momo.common.vo.UserVO" resultType="java.util.Map">
+        SELECT id,
+               regi_dt
+        FROM tb_account
+        WHERE name = #{name}
+          AND email = #{email}
+    </select>
+
+    <select id="tryFindUserIdByTel" parameterType="com.momo.common.vo.UserVO" resultType="java.util.Map">
+        SELECT id,
+               regi_dt
+        FROM tb_account
+        WHERE name = #{name}
+          AND tel = #{tel}
+    </select>
+
+    <select id="getConnectedUser" resultType="java.util.Map">
+        SELECT id   AS user_id,
+               name AS user_nm,
+               pfp
+        FROM tb_account
+        WHERE id = #{id}
+    </select>
+
+<!--    추후 채팅 기능 추가되면 수정할 것-->
+<!--    <select id="getChatInvitableUser" parameterType="com.momo.common.vo.SearchVO" resultType="java.util.Map">-->
+<!--        WITH tb AS (-->
+<!--                       SELECT ac.id   AS user_id,-->
+<!--                              ac.name AS user_nm,-->
+<!--                              em.role,-->
+<!--                              em.shop_id,-->
+<!--                              em.corp_id,-->
+<!--                              sh.shop_nm,-->
+<!--                              cp.corp_nm-->
+<!--                       FROM tb_staff em-->
+<!--                                LEFT OUTER JOIN tb_account ac ON ac.id = em.emp_id-->
+<!--                                LEFT OUTER JOIN tb_shop sh ON em.shop_id = sh.shop_id-->
+<!--                                LEFT OUTER JOIN tb_corp cp ON em.corp_id = cp.corp_id-->
+<!--                   )-->
+
+<!--        SELECT *-->
+<!--        FROM tb-->
+<!--        WHERE ${andSelect}-->
+<!--          AND ${orSearch}-->
+<!--            ${prop}-->
+<!--    </select>-->
+
+    <update id="updateUserToDormant">
+        UPDATE
+            tb_account
+        SET user_st=1
+        WHERE user_st = 0
+          AND DATEDIFF(CURRENT_DATE, last_login_dt) > #{date};
+
+
+    </update>
+
+    <update id="loginNow">
+        UPDATE
+            tb_account
+        SET last_login_dt=NOW(),
+            user_st=0
+        WHERE id = #{id}
+    </update>
+
+    <select id="getUserAsAuthorization">
+        SELECT ac.id,
+               ac.pwd,
+               (
+                   select IFNULL(sf.role, -1)
+                   from tb_staff sf
+                   where ac.curr_shop_id = sf.shop_id and
+                         ac.id = sf.staff_id
+                   ) as role
+        from tb_account ac
+        where id=#{userId}
+    </select>
+
+    <select id="getUserInfo">
+        SELECT ac.id,
+               ac.name,
+               ac.tel,
+               ac.nickname,
+               ac.pfp,
+               ac.curr_shop_id,
+               (
+                   select IFNULL(sf.role, -1)
+                   from tb_staff sf
+                   where sf.shop_id = ac.curr_shop_id and
+                         sf.staff_id = ac.id
+                   ) as role,
+               sh.shop_nm,
+               sh.shop_addr,
+               sh.provider,
+               (
+                   select IF(count(*),
+                              IFNULL((
+                                  select sf2.approval_st
+                                  from tb_staff sf2
+                                  where sf2.shop_id=ac.curr_shop_id and
+                                      sf2.staff_id=ac.id
+                              ),0), -1)
+                   from tb_staff sf
+                   where sf.staff_id=ac.id
+               ) as approval_st
+        FROM tb_account ac
+        LEFT OUTER JOIN tb_shop sh on sh.shop_id=ac.curr_shop_id
+        WHERE id = #{userId}
+    </select>
+
+    <!--    User-->
+    <select id="getUser" parameterType="com.momo.common.vo.UserVO" resultType="java.util.Map">
+        select
+        *
+        from
+        tb_account
+        where
+        <if test='id != null and !id.equals("")'>
+            id=#{id} and
+        </if>
+        <if test='name != null and !name.equals("")'>
+            name=#{name} and
+        </if>
+        <if test='email != null and !email.equals("")'>
+            email=#{email} and
+        </if>
+        <if test='tel != null and !tel.equals("")'>
+            tel=#{tel} and
+        </if>
+        <if test='regiDt != null and !regiDt.equals("")'>
+            regi_dt=#{regiDt} and
+        </if>
+        1 = 1
+        <if test='order != null and !order.equals("")'>
+            order by
+            ${order} ${asc}
+        </if>
+        <if test='limit != null and offset != null'>
+            limit ${offset} ${limit}
+        </if>
+    </select>
+
+
+    <select id="searchUser" parameterType="com.momo.common.vo.SearchVO" resultType="java.util.Map">
+        SELECT *
+        FROM tb_account
+        WHERE ${andSelect}
+          AND ${orSearch}
+            ${prop}
+    </select>
+
+    <insert id="insertUser" parameterType="com.momo.common.vo.UserVO">
+        INSERT INTO tb_account
+            (id, pwd, name, email, tel, terms)
+        VALUES (#{id}, #{pwd}, #{name}, #{email}, #{tel}, #{terms})
+    </insert>
+
+    <update id="updateUser" parameterType="com.momo.common.vo.UserVO">
+        update
+        tb_account
+        set
+        <if test='name != null and !name.equals("")'>
+            name=#{name},
+        </if>
+        <if test='email != null and !email.equals("")'>
+            email=#{email},
+        </if>
+        <if test='tel != null and !tel.equals("")'>
+            tel=#{tel},
+        </if>
+        <if test='terms != null and !terms.equals("")'>
+            terms=#{terms},
+        </if>
+        id=#{id}
+        where
+        id=#{id}
+    </update>
+
+    <delete id="deleteUser">
+        DELETE
+        FROM tb_account
+        WHERE id = #{id}
+    </delete>
+
+    <!--    Staff -->
+
+    <insert id="insertStaff" parameterType="com.momo.common.vo.UserVO">
+        INSERT INTO tb_staff
+            (shop_id, staff_id, role)
+        VALUES (#{shopId},#{staffId}, #{role})
+    </insert>
+
+    <update id="updateStaff" parameterType="com.momo.common.vo.UserVO">
+        update
+        tb_staff
+        set
+        <if test='shopId != null'>
+            shop_id=#{shopId},
+        </if>
+        approval_st=#{approvalSt}
+        where
+        user_id=#{staffId}
+    </update>
+
+    <delete id="deleteStaff">
+        DELETE
+        FROM tb_staff
+        WHERE staff_id = #{id}
+    </delete>
+
+    <select id="getInnerStaffTotalCount">
+        SELECT count(*)
+        FROM tb_staff
+        WHERE shop_id= #{currShopId}
+    </select>
+
+</mapper>

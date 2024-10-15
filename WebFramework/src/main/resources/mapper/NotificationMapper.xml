@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.momo.mapper.NotificationMapper">
+    <update id="readAll">
+        UPDATE tb_notification
+        SET read_st = TRUE
+        WHERE receiver_id = #{userId}
+          AND read_st = FALSE
+    </update>
+
+    <select id="countUnreadNotif">
+        SELECT count(*)
+        FROM tb_notification
+        WHERE receiver_id = #{userId}
+          AND read_st = FALSE
+    </select>
+    
+    <select id="getNotifList">
+        SELECT content,
+               notif_id,
+               read_st,
+               notif_tp as type,
+               IF(date(send_dt) = current_date,true,false) as today,
+            (
+               TIMESTAMPDIFF(MINUTE, send_dt, current_timestamp)
+            ) as ago
+        FROM tb_notification
+        WHERE receiver_id=#{userId}
+        ORDER BY send_dt DESC
+    </select>
+
+    <insert id="insertNotification" parameterType="com.momo.common.vo.NotifVO">
+        insert into
+            tb_notification
+        (notif_id, sender_id, receiver_id, notif_tp, content)
+        values
+            ((
+                select
+                    *
+                from
+                    (
+                        select
+                            IFNULL(max(notif_id)+1, 1)
+                        from
+                            tb_notification
+                        where
+                            receiver_id=#{receiverId}
+                    ) as sub
+                for update
+                 )
+            ,#{senderId},#{receiverId},#{noteTp},#{content})
+
+    </insert>
+
+    <update id="read" >
+        update
+            tb_notification
+        set
+            read_st=true
+        where
+            notif_id=#{id}
+    </update>
+
+    <update id="readAllByReceiver">
+        update
+            tb_notification
+        set
+            read_st=1
+        where
+            receiver_id=#{id}
+    </update>
+
+    <update id="approve">
+        update
+            tb_notification
+        set
+            content='1'
+        where
+            notif_id=#{id}
+    </update>
+
+</mapper>

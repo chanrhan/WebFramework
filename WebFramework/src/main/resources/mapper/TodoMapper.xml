@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.momo.mapper.TodoMapper">
+    <insert id="insertTodo">
+        SET @next_todo_id := (
+            SELECT IFNULL(max(todo_id),0)+1
+            FROM tb_todo
+            WHERE shop_id = #{currShopId} and
+                  todo_dt = #{date}
+            );
+
+        INSERT INTO tb_todo
+        (shop_id, todo_dt, todo_id, color, checked, content)
+        VALUES (#{currShopId}, #{date}, @next_todo_id, #{color}, #{checked}, #{content})
+    </insert>
+
+    <update id="updateTodoColor">
+        UPDATE tb_todo
+        SET color=#{color}
+        WHERE shop_id= #{currShopId} and
+            todo_id=#{todoId} and
+            todo_dt=#{date}
+    </update>
+
+    <update id="updateTodoChecked">
+        UPDATE tb_todo
+        SET checked=#{checked}
+        WHERE shop_id= #{currShopId} and
+            todo_id=#{todoId} and
+            todo_dt=#{date}
+    </update>
+
+    <update id="updateTodoContent">
+        UPDATE tb_todo
+        SET content=#{content}
+        WHERE shop_id=#{currShopId} and
+            todo_id=#{todoId} and
+            todo_dt=#{date}
+    </update>
+
+    <select id="getTodoForCalendar">
+        SELECT SUBSTR(todo_dt, 9, 2)
+        FROM tb_todo
+        WHERE shop_id= #{currShopId}  and
+            todo_dt like '%${date}%'
+    </select>
+
+    <select id="getTodoDetail">
+        SELECT todo_id,
+                color,
+                checked,
+               content
+        FROM tb_todo td
+        WHERE td.shop_id=#{currShopId} and
+            todo_dt=#{date}
+    </select>
+
+    <delete id="deleteTodo">
+        DELETE FROM tb_todo
+        WHERE shop_id=#{currShopId} and
+            todo_dt=#{date} and
+            todo_id=#{todoId}
+    </delete>
+</mapper>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.momo.mapper.ReserveMsgMapper">
+    <insert id="insertMsg" parameterType="com.momo.common.vo.ReserveMessageVO">
+        SET @next_msg_id := (
+            select IFNULL(max(msg_id),0)+1
+            from tb_rsv_msg
+            where shop_id=#{currShopId} and
+                  sale_id=#{saleId} and
+                  rsv_dt=#{rsvDt}
+            );
+
+        INSERT INTO tb_rsv_msg
+        (shop_id, sale_id, msg_id, msg_tp, content, rsv_dt, rsv_tp, dday)
+        VALUES (#{currShopId}, #{saleId}, @next_msg_id, #{msgTp},#{content},#{rsvDt}, #{rsvTp}, #{dday})
+    </insert>
+
+    <select id="getReserveMsgForCalendar">
+        <![CDATA[
+
+        set @from := (
+            select concat(#{date},'-01')
+        );
+
+
+        with recursive calendar as (
+            select @from as d
+            union all
+            select date_add(d, interval 1 day) as d
+            from calendar
+            where d < last_day(@from)
+        ), msg as (
+            select rsv_dt,
+                   json_object(
+                           'msg_st',msg_st,
+                           'cnt', IFNULL(count(msg_st),0)
+                   ) as value
+            from tb_rsv_msg
+            where shop_id=#{currShopId}
+            group by rsv_dt, msg_st
+        )
+
+
+        select json_arrayagg(value) as value
+        from calendar
+                 left outer join msg rm on rm.rsv_dt=d
+        group by d
+        ]]>
+    </select>
+
+    <select id="getReserveMsgDetail">
+        SELECT sl.cust_nm,
+               msg_tp,
+               IF(rm.rsv_tp != 2, 'D', 'M') as dday_tp,
+               dday
+        FROM tb_rsv_msg rm
+        LEFT OUTER JOIN tb_sale sl on sl.sale_id= rm.sale_id
+        WHERE rm.shop_id= #{currShopId} and
+            rsv_dt=#{date} and
+            msg_st=#{state}
+    </select>
+</mapper>

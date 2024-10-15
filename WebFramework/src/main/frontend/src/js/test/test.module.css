@@ -1,0 +1,8 @@
+.chart_wrap{
+    display: block;
+}
+
+.chart_wrap .chart_inner{
+    max-width: 900px;
+    width: 90vw;
+}

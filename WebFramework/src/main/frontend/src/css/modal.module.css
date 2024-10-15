@@ -1,0 +1,81 @@
+.modal_snakbar {
+    display: inline-block;
+    opacity: 0;
+    visibility: hidden;
+    position: fixed;
+    top: 90px;
+    left: 50%;
+    z-index: 99;
+    padding: 18px 16px;
+    border-radius: 16px;
+    background-color: #fff;
+    box-shadow: 0 16px 24px rgba(40, 39, 44, 0.14);
+    color: #50505c;
+    font-size: 18px;
+    text-align: center;
+    line-height: 24px;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    animation: fade-In 0.3s;
+    /*transition: all .25s ease-in-out;*/
+}
+
+.modal_snakbar.active {
+    opacity: 1;
+    visibility: inherit;
+    top: 100px;
+}
+
+.modal_snakbar.warning:before {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    background: url(../images/warning_icon.png) no-repeat left top / 24px auto;
+    vertical-align: top;
+}
+
+.modal_snakbar.info:before{
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    background: url(../images/info_icon.png) no-repeat left top / 24px auto;
+    vertical-align: top;
+}
+
+.modal_snakbar.alert:before{
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    background: url(../images/alert_icon.png) no-repeat left top / 24px auto;
+    vertical-align: top;
+}
+
+.modal_snakbar.fade_out{
+    animation: fade-Out 0.5s;
+}
+
+@keyframes fade-In {
+    from{
+        opacity: 0;
+        margin-top: 15px;
+    }
+    to{
+        opacity: 1;
+        margin-top: 0;
+    }
+}
+
+@keyframes fade-Out {
+    from{
+        opacity: 1;
+        margin-top: 0;
+    }
+    to{
+        opacity: 0;
+        margin-top: 15px;
+    }
+}
+
