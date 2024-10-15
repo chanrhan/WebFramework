@@ -14,8 +14,8 @@
 <!--        </websocket:handshake-interceptors>-->
 <!--    </websocket:handlers>-->
 
-<!--    <bean id="wsHandler" class="com.momo.handler.WebSocketAlarmHandler">-->
-<!--        <constructor-arg index="0" ref="com.momo.service.NotificationService"/>-->
+<!--    <bean id="wsHandler" class="com.webframework.handler.WebSocketAlarmHandler">-->
+<!--        <constructor-arg index="0" ref="com.webframework.service.NotificationService"/>-->
 <!--        <constructor-arg index="1" ref=""/>-->
 <!--    </bean>-->
 

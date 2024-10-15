@@ -31,7 +31,7 @@
         ORDER BY send_dt DESC
     </select>
 
-    <insert id="insertNotification" parameterType="com.momo.common.vo.NotifVO">
+    <insert id="insertNotification" parameterType="com.webframework.common.vo.NotifVO">
         insert into
             tb_notification
         (notif_id, sender_id, receiver_id, notif_tp, content)

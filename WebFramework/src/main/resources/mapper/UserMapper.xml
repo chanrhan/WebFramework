@@ -93,7 +93,7 @@
         where id=#{id}
     </select>
 
-    <update id="updatePassword" parameterType="com.momo.common.vo.UserVO">
+    <update id="updatePassword" parameterType="com.webframework.common.vo.UserVO">
         UPDATE tb_account
         SET pwd = #{updatePwd}
         WHERE id = #{id}
@@ -222,7 +222,7 @@
         WHERE   id=#{id}
     </update>
 
-    <update id="resetPassword" parameterType="com.momo.common.vo.UserVO">
+    <update id="resetPassword" parameterType="com.webframework.common.vo.UserVO">
         UPDATE tb_account
         SET     pwd=#{pwd}
         WHERE id = #{id}
@@ -247,7 +247,7 @@
         WHERE id=#{id}
     </select>
 
-    <select id="matchUserId" parameterType="com.momo.common.vo.UserVO">
+    <select id="matchUserId" parameterType="com.webframework.common.vo.UserVO">
         SELECT IF(count(*) > 0,TRUE,FALSE)
         FROM tb_account
         WHERE id = #{id}
@@ -280,7 +280,7 @@
         where id=#{id}
     </select>
 
-    <select id="tryFindUserIdByEmail" parameterType="com.momo.common.vo.UserVO" resultType="java.util.Map">
+    <select id="tryFindUserIdByEmail" parameterType="com.webframework.common.vo.UserVO" resultType="java.util.Map">
         SELECT id,
                regi_dt
         FROM tb_account
@@ -288,7 +288,7 @@
           AND email = #{email}
     </select>
 
-    <select id="tryFindUserIdByTel" parameterType="com.momo.common.vo.UserVO" resultType="java.util.Map">
+    <select id="tryFindUserIdByTel" parameterType="com.webframework.common.vo.UserVO" resultType="java.util.Map">
         SELECT id,
                regi_dt
         FROM tb_account
@@ -305,7 +305,7 @@
     </select>
 
 <!--    추후 채팅 기능 추가되면 수정할 것-->
-<!--    <select id="getChatInvitableUser" parameterType="com.momo.common.vo.SearchVO" resultType="java.util.Map">-->
+<!--    <select id="getChatInvitableUser" parameterType="com.webframework.common.vo.SearchVO" resultType="java.util.Map">-->
 <!--        WITH tb AS (-->
 <!--                       SELECT ac.id   AS user_id,-->
 <!--                              ac.name AS user_nm,-->
@@ -391,7 +391,7 @@
     </select>
 
     <!--    User-->
-    <select id="getUser" parameterType="com.momo.common.vo.UserVO" resultType="java.util.Map">
+    <select id="getUser" parameterType="com.webframework.common.vo.UserVO" resultType="java.util.Map">
         select
         *
         from
@@ -423,7 +423,7 @@
     </select>
 
 
-    <select id="searchUser" parameterType="com.momo.common.vo.SearchVO" resultType="java.util.Map">
+    <select id="searchUser" parameterType="com.webframework.common.vo.SearchVO" resultType="java.util.Map">
         SELECT *
         FROM tb_account
         WHERE ${andSelect}
@@ -431,13 +431,13 @@
             ${prop}
     </select>
 
-    <insert id="insertUser" parameterType="com.momo.common.vo.UserVO">
+    <insert id="insertUser" parameterType="com.webframework.common.vo.UserVO">
         INSERT INTO tb_account
             (id, pwd, name, email, tel, terms)
         VALUES (#{id}, #{pwd}, #{name}, #{email}, #{tel}, #{terms})
     </insert>
 
-    <update id="updateUser" parameterType="com.momo.common.vo.UserVO">
+    <update id="updateUser" parameterType="com.webframework.common.vo.UserVO">
         update
         tb_account
         set
@@ -466,13 +466,13 @@
 
     <!--    Staff -->
 
-    <insert id="insertStaff" parameterType="com.momo.common.vo.UserVO">
+    <insert id="insertStaff" parameterType="com.webframework.common.vo.UserVO">
         INSERT INTO tb_staff
             (shop_id, staff_id, role)
         VALUES (#{shopId},#{staffId}, #{role})
     </insert>
 
-    <update id="updateStaff" parameterType="com.momo.common.vo.UserVO">
+    <update id="updateStaff" parameterType="com.webframework.common.vo.UserVO">
         update
         tb_staff
         set

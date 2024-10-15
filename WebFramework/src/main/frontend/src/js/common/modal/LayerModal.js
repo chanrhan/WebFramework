@@ -4,7 +4,7 @@ import {useEffect, useRef, useState} from "react";
 import {ScrollUtils} from "../../utils/ScrollUtils";
 
 export const LayerModal = ({modalRef, scrollable, children, top, left, width,
-                               height, minWidth, maxWidth, minHeight, maxHeight}) => {
+                                height, minWidth, maxWidth, minHeight, maxHeight}) => {
     const [fadeIn, setFadeIn] = useState(false);
 
     const scrollRef = useRef(null)
